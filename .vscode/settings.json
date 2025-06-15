@@ -1,0 +1,9 @@
+{
+    "chat.mcp.serverSampling": {
+        "mcp/.vscode/mcp.json: promptEditor": {
+            "allowedModels": [
+                "github.copilot-chat/gpt-4.1"
+            ]
+        }
+    }
+}
