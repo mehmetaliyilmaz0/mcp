@@ -7,14 +7,14 @@ Model Context Protocol (MCP) — Kısaca Nedir?
 
 ### 2 . Neden Ortaya Çıktı?
 
-Problem MCP’nin Çözümü Her entegrasyon için özel “LLM wrapper” yazma ihtiyacı **Resource** ve **Tool** şemalarının protokol seviyesinde tanımlanması LLM çağrısında veri taşıma / oturum başlatma farklılıkları initialize → read\_resource → call\_tool akışının standartlaşmasıFarklı taşıyıcılar (stdio, WebSocket, TCP, HTTP) için ayrı kod tabanı Taşıyıcı katmanı soyut; protokol mesaj formatı değişmez
+Problem MCP’nin Çözümü Her entegrasyon için özel “LLM wrapper” yazma ihtiyacı **Resource** ve **Tool** şemalarının protokol seviyesinde tanımlanması LLM çağrısında veri taşıma / oturum başlatma farklılıkları initialize → read\_resource → call\_tool akışının standartlaşması Farklı taşıyıcılar (stdio, WebSocket, TCP, HTTP) için ayrı kod tabanı Taşıyıcı katmanı soyut; protokol mesaj formatı değişmez
 
 ### 3 . Temel Kavramlar
-**Resource** LLM’nin okuyabileceği dış içerik.Örnek: file:///.../notes.txt, s3://bucket/key, row://customers/42**Tool**LLM’nin çağırabileceği fonksiyon.JSON argüman alır, JSON döndürür.**Prompt** Başlangıç talimatları veya kullanıcı mesajları. MCP, bunları **system / assistant / user** kanallarıyla iletir.
+**Resource** LLM’nin okuyabileceği dış içerik.Örnek: file:///.../notes.txt, s3://bucket/key, row://customers/42 **Tool** LLM’nin çağırabileceği fonksiyon.JSON argüman alır, JSON döndürür.**Prompt** Başlangıç talimatları veya kullanıcı mesajları. MCP, bunları **system / assistant / user** kanallarıyla iletir.
 
 ### 4 . Tipik Akış
 
-1.  **Oturum Açılışı**İstemci (ClientSession) sunucuya protokol sürümü ve yeteneklerini iletir.
+1.  **Oturum Açılışı** İstemci (ClientSession) sunucuya protokol sürümü ve yeteneklerini iletir.
     
 2.  **Kaynak Listeleme / Okuma**
     
@@ -24,7 +24,7 @@ Problem MCP’nin Çözümü Her entegrasyon için özel “LLM wrapper” yazma
         
 3.  call\_tool("apply\_edit", { "prompt": "2023 yerine 2024" })Araç başarılıysa diff/çıktı JSON olarak döner.
     
-4.  **Kaydetme veya Yeni Kaynak**Sunucu, aracı kullanarak dosyayı doğrudan günceller ya da yeni bir kaynak ekler.
+4.  **Kaydetme veya Yeni Kaynak** Sunucu, aracı kullanarak dosyayı doğrudan günceller ya da yeni bir kaynak ekler.
     
 ### 5 . Avantajlar
 
