@@ -10,8 +10,7 @@ Model Context Protocol (MCP) — Kısaca Nedir?
 Problem MCP’nin Çözümü Her entegrasyon için özel “LLM wrapper” yazma ihtiyacı **Resource** ve **Tool** şemalarının protokol seviyesinde tanımlanması LLM çağrısında veri taşıma / oturum başlatma farklılıkları initialize → read\_resource → call\_tool akışının standartlaşmasıFarklı taşıyıcılar (stdio, WebSocket, TCP, HTTP) için ayrı kod tabanı Taşıyıcı katmanı soyut; protokol mesaj formatı değişmez
 
 ### 3 . Temel Kavramlar
-
-Bileşen Kısa Açıklama**Resource** LLM’nin okuyabileceği dış içerik.Örnek: file:///.../notes.txt, s3://bucket/key, row://customers/42**Tool**LLM’nin çağırabileceği fonksiyon.JSON argüman alır, JSON döndürür.**Prompt** Başlangıç talimatları veya kullanıcı mesajları. MCP, bunları **system / assistant / user** kanallarıyla iletir.
+**Resource** LLM’nin okuyabileceği dış içerik.Örnek: file:///.../notes.txt, s3://bucket/key, row://customers/42**Tool**LLM’nin çağırabileceği fonksiyon.JSON argüman alır, JSON döndürür.**Prompt** Başlangıç talimatları veya kullanıcı mesajları. MCP, bunları **system / assistant / user** kanallarıyla iletir.
 
 ### 4 . Tipik Akış
 
