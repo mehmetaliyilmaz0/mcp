@@ -2,6 +2,7 @@
 import difflib, pathlib, os
 import google.generativeai as genai  # NEW: Gemini SDK
 from mcp.server.fastmcp import FastMCP
+import asyncio  # NEW: Import asyncio
 
 BASE = pathlib.Path(__file__).parent
 DATA = BASE / "data"; DATA.mkdir(exist_ok=True)
@@ -12,7 +13,7 @@ UTF8 = dict(encoding="utf8")
 if not FILE.exists():
     FILE.write_text("Bu bir test notudur.\n2023 yılında yazıldı.\n", **UTF8)
 
-genai.configure(api_key="GEMINI_API_KEY")  
+genai.configure(api_key="API_KEY")  # NEW: Configure Gemini API key
 
 app = FastMCP("editor")
 
@@ -37,15 +38,21 @@ async def apply_edit(prompt: str):
         "Sadece düzenlenmiş metnin tamamını döndür:\n\nMETİN:\n" + old
     )
 
-    try:
+    def call_gemini():
         model = genai.GenerativeModel("gemini-pro")
-        response = model.generate_content(
+        return model.generate_content(
             [
                 {"role": "system", "parts": [system_prompt]},
                 {"role": "user", "parts": [user_input]}
             ]
         )
-        new = response.text.strip()
+
+    try:
+        response = await asyncio.to_thread(call_gemini)
+        new = getattr(response, "text", None)
+        if not new:
+            return {"status": "error", "message": "Gemini yanıtı boş veya hatalı", "diff": ""}
+        new = new.strip()
     except Exception as e:
         return {"status": "error", "message": str(e), "diff": ""}
 
