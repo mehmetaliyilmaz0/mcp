@@ -54,7 +54,8 @@ async def apply_edit(prompt: str):
             return {"status": "error", "message": "Gemini yanıtı boş veya hatalı", "diff": ""}
         new = new.strip()
     except Exception as e:
-        return {"status": "error", "message": str(e), "diff": ""}
+        print("Sunucu hatası:", e)  # Sunucuya yaz, kullanıcıya gösterme
+        return {"status": "error", "message": "Bir hata oluştu, lütfen daha sonra tekrar deneyin.", "diff": ""}
 
     if new == old:
         return {"status": "no-change", "message": "Değişiklik yok", "diff": ""}
