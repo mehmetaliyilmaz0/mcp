@@ -7,26 +7,26 @@ DATA = BASE / "data"; DATA.mkdir(exist_ok=True)
 FILE = DATA / "notes.txt"
 UTF8 = dict(encoding="utf8")
 
-# Not dosyasını oluştur
+
 if not FILE.exists():
     FILE.write_text("Bu bir test notudur.\n2023 yılında yazıldı.\n", **UTF8)
 
-# OpenAI API Anahtarını gir
-openai.api_key = "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"  # ← BURAYA kendi OpenAI API key'ini gir
+
+openai.api_key = "" 
 
 app = FastMCP("editor")
 
-# Kaynak tanımı
+
 @app.resource(FILE.resolve().as_uri(), name="Notlar", mime_type="text/plain")
 async def oku():
     return FILE.read_text(**UTF8)
 
-# Diff hesaplayıcı
+
 def _diff(old, new):
     return "\n".join(difflib.unified_diff(old.splitlines(), new.splitlines(),
                                           fromfile="old", tofile="new"))
 
-# Düzenleme aracı
+
 @app.tool(name="apply_edit", description="Doğal dil komutla metni düzenler")
 async def apply_edit(prompt: str):
     old = FILE.read_text(**UTF8)
