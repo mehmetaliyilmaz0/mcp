@@ -1,44 +1,58 @@
-import difflib, pathlib, re, os
+# server.py
+import difflib, pathlib, os, openai
 from mcp.server.fastmcp import FastMCP
 
-BASE   = pathlib.Path(__file__).parent
-DATA   = BASE / "data"; DATA.mkdir(exist_ok=True)
-FILE   = DATA / "notes.txt"
-if not FILE.exists():
-    FILE.write_text("Bu bir test dosyasıdır.\n2023 yılında oluşturuldu.\n", encoding="utf8")
-UTF8   = dict(encoding="utf8")
+BASE = pathlib.Path(__file__).parent
+DATA = BASE / "data"; DATA.mkdir(exist_ok=True)
+FILE = DATA / "notes.txt"
+UTF8 = dict(encoding="utf8")
 
+# Not dosyasını oluştur
+if not FILE.exists():
+    FILE.write_text("Bu bir test notudur.\n2023 yılında yazıldı.\n", **UTF8)
+
+# OpenAI API Anahtarını gir
+openai.api_key = "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"  # ← BURAYA kendi OpenAI API key'ini gir
 
 app = FastMCP("editor")
 
-@app.resource(f"file:///{FILE.as_posix()}", name="Notes", mime_type="text/plain")
-async def read_notes():             
+# Kaynak tanımı
+@app.resource(FILE.resolve().as_uri(), name="Notlar", mime_type="text/plain")
+async def oku():
     return FILE.read_text(**UTF8)
 
-def _diff(a, b):                    
-    return "\n".join(difflib.unified_diff(a.splitlines(), b.splitlines(),
+# Diff hesaplayıcı
+def _diff(old, new):
+    return "\n".join(difflib.unified_diff(old.splitlines(), new.splitlines(),
                                           fromfile="old", tofile="new"))
 
-@app.tool(name="apply_edit", description="Doğal dil komutla notları günceller")
+# Düzenleme aracı
+@app.tool(name="apply_edit", description="Doğal dil komutla metni düzenler")
 async def apply_edit(prompt: str):
-    old  = FILE.read_text(**UTF8)
-    cmd  = prompt.strip()
+    old = FILE.read_text(**UTF8)
+    user_input = prompt.strip()
 
-    # 1) basit “X yerine Y” 
-    p1 = re.search(r'"?([^"]+?)"?\s+yerine\s+"?([^"]+?)"?$', cmd, re.I)
-    p2 = re.search(r'"?([^"]+?)"?\s+[iı]\s+"?([^"]+?)"?\s*yap$', cmd, re.I)
-    if p1 or p2:
-        new = old.replace(*(p1 or p2).groups())
-    else:
-        # 2) “sonuna … ekle”
-        m = re.search(r'sonuna\s+"?([^"]+?)"?\s+ekle$', cmd, re.I)
-        if m:
-            new = old.rstrip("\n") + "\n" + m.group(1) + "\n"
-        else:
-            return {"status": "no-match", "message": "Komut anlaşılamadı", "diff": ""}
+    system_prompt = (
+        "Aşağıdaki metni kullanıcı komutuna göre düzenle. "
+        "Sadece düzenlenmiş metnin tamamını döndür:\n\nMETİN:\n" + old
+    )
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input}
+            ],
+            temperature=0.2
+        )
+        new = response.choices[0].message.content.strip()
+    except Exception as e:
+        return {"status": "error", "message": str(e), "diff": ""}
 
     if new == old:
         return {"status": "no-change", "message": "Değişiklik yok", "diff": ""}
+
     FILE.write_text(new, **UTF8)
     return {"status": "modified", "diff": _diff(old, new)}
 

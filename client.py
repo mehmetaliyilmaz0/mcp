@@ -1,4 +1,4 @@
-
+# client.py
 import asyncio, pathlib, sys, json
 from mcp.client.stdio import stdio_client
 from mcp import ClientSession, StdioServerParameters
@@ -8,11 +8,11 @@ async def run(prompt: str):
     if not srv.exists():
         raise SystemExit("server.py bulunamadı")
 
-    async with stdio_client(          
+    async with stdio_client(
         StdioServerParameters(command="python", args=[srv.as_posix()])
     ) as tr, ClientSession(*tr) as s:
         await s.initialize()
-        uri = f"file:///{srv.parent.as_posix()}/data/notes.txt"
+        uri = (srv.parent / "data" / "notes.txt").resolve().as_uri()
 
         print("ÖNCE:\n", (await s.read_resource(uri)).contents[0].text)
         res = await s.call_tool("apply_edit", {"prompt": prompt})
@@ -21,9 +21,9 @@ async def run(prompt: str):
         print("SONRA:\n", (await s.read_resource(uri)).contents[0].text)
 
 async def main():
-    if len(sys.argv) > 1:             
+    if len(sys.argv) > 1:
         await run(" ".join(sys.argv[1:]))
-    else:                             
+    else:
         while (p := input("> ").strip()) not in {"quit", "exit"}:
             await run(p)
 
