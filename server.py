@@ -1,5 +1,6 @@
 # server.py
-import difflib, pathlib, os, openai
+import difflib, pathlib, os
+import google.generativeai as genai  # NEW: Gemini SDK
 from mcp.server.fastmcp import FastMCP
 
 BASE = pathlib.Path(__file__).parent
@@ -11,8 +12,7 @@ UTF8 = dict(encoding="utf8")
 if not FILE.exists():
     FILE.write_text("Bu bir test notudur.\n2023 yılında yazıldı.\n", **UTF8)
 
-
-openai.api_key = "" 
+genai.configure(api_key="GEMINI_API_KEY")  
 
 app = FastMCP("editor")
 
@@ -38,15 +38,14 @@ async def apply_edit(prompt: str):
     )
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_input}
-            ],
-            temperature=0.2
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(
+            [
+                {"role": "system", "parts": [system_prompt]},
+                {"role": "user", "parts": [user_input]}
+            ]
         )
-        new = response.choices[0].message.content.strip()
+        new = response.text.strip()
     except Exception as e:
         return {"status": "error", "message": str(e), "diff": ""}
 
